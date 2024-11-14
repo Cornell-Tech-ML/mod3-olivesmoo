@@ -1,15 +1,20 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Type
+from operator import index
+from re import M
+from typing import TYPE_CHECKING, Any, Callable, Optional, Type
 
 import numpy as np
 from typing_extensions import Protocol
 
 from . import operators
 from .tensor_data import (
+    MAX_DIMS,
     broadcast_index,
     index_to_position,
     shape_broadcast,
+    to_index,
+    Index,
 )
 
 if TYPE_CHECKING:
@@ -238,8 +243,7 @@ class SimpleOps(TensorOps):
 
 
 def tensor_map(
-    fn: Callable[[float], float],
-) -> Callable[[Storage, Shape, Strides, Storage, Shape, Strides], None]:
+    fn: Callable[[float], float]) -> Any:
     """Low-level implementation of tensor map between
     tensors with *possibly different strides*.
 
@@ -272,38 +276,20 @@ def tensor_map(
         in_storage: Storage,
         in_shape: Shape,
         in_strides: Strides,
-    ) -> None:
-        all_indices = []
-        num_dims = len(out_shape)
-        out_index = np.zeros(num_dims, dtype=int)
-
-        while True:
-            all_indices.append(out_index.copy())
-
-            for dim in reversed(range(num_dims)):
-                out_index[dim] += 1
-                if out_index[dim] < out_shape[dim]:
-                    break
-                out_index[dim] = 0
-            else:
-                break
-
-        in_index = np.zeros(len(in_shape), dtype=int)
-        for i in all_indices:
-            index = np.array(i, dtype=int)
-            broadcast_index(index, out_shape, in_shape, in_index)
-            out[index_to_position(index, out_strides)] = fn(
-                in_storage[index_to_position(in_index, in_strides)]
-            )
-
+    ) -> None:  
+        out_index: Index = np.zeros(MAX_DIMS, np.int32)
+        in_index: Index = np.zeros(MAX_DIMS, np.int32)
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+            broadcast_index(out_index, out_shape, in_shape, in_index)
+            o = index_to_position(out_index, out_strides)
+            j = index_to_position(in_index, in_strides)
+            out[o] = fn(in_storage[j])
     return _map
 
 
 def tensor_zip(
-    fn: Callable[[float, float], float],
-) -> Callable[
-    [Storage, Shape, Strides, Storage, Shape, Strides, Storage, Shape, Strides], None
-]:
+    fn: Callable[[float, float], float]) -> Any:
     """Low-level implementation of tensor zip between
     tensors with *possibly different strides*.
 
@@ -340,42 +326,22 @@ def tensor_zip(
         b_shape: Shape,
         b_strides: Strides,
     ) -> None:
-        all_indices = []
-        num_dims = len(out_shape)
-        out_index = np.zeros(num_dims, dtype=int)
-
-        while True:
-            all_indices.append(out_index.copy())
-
-            for dim in reversed(range(num_dims)):
-                out_index[dim] += 1
-                if out_index[dim] < out_shape[dim]:
-                    break
-                out_index[dim] = 0
-            else:
-                break
-
-        a_index = np.zeros(len(a_shape), dtype=int)
-        b_index = np.zeros(len(b_shape), dtype=int)
-
-        for i in all_indices:
-            index = np.array(i, dtype=int)
-            broadcast_index(index, out_shape, a_shape, a_index)
-            broadcast_index(index, out_shape, b_shape, b_index)
-
-            a_position = index_to_position(a_index, a_strides)
-            b_position = index_to_position(b_index, b_strides)
-
-            out[index_to_position(index, out_strides)] = fn(
-                a_storage[a_position], b_storage[b_position]
-            )
+        out_index: Index = np.zeros(MAX_DIMS, np.int32)
+        a_index: Index = np.zeros(MAX_DIMS, np.int32)
+        b_index: Index = np.zeros(MAX_DIMS, np.int32)
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+            o = index_to_position(out_index, out_strides)
+            broadcast_index(out_index, out_shape, a_shape, a_index)
+            j = index_to_position(a_index, a_strides)
+            broadcast_index(out_index, out_shape, b_shape, b_index)
+            k = index_to_position(b_index, b_strides)
+            out[o] = fn(a_storage[j], b_storage[k])
 
     return _zip
 
 
-def tensor_reduce(
-    fn: Callable[[float, float], float],
-) -> Callable[[Storage, Shape, Strides, Storage, Shape, Strides, int], None]:
+def tensor_reduce(fn: Callable[[float, float], float]) -> Any:
     """Low-level implementation of tensor reduce.
 
     * `out_shape` will be the same as `a_shape`
@@ -400,27 +366,15 @@ def tensor_reduce(
         a_strides: Strides,
         reduce_dim: int,
     ) -> None:
-        all_indices = []
-        num_dims = len(a_shape)
-        a_index = np.zeros(num_dims, dtype=int)
-
-        while True:
-            all_indices.append(a_index.copy())
-            for dim in reversed(range(num_dims)):
-                a_index[dim] += 1
-                if a_index[dim] < a_shape[dim]:
-                    break
-                a_index[dim] = 0
-            else:
-                break
-
-        out_index = np.zeros(len(a_shape), dtype=int)
-        for i in all_indices:
-            index = np.array(i, dtype=int)
-            broadcast_index(index, a_shape, out_shape, out_index)
-            out_position = index_to_position(out_index, out_strides)
-            a_position = index_to_position(index, a_strides)
-            out[out_position] = fn(out[out_position], a_storage[a_position])
+        out_index: Index = np.zeros(MAX_DIMS, np.int32)
+        reduce_size = a_shape[reduce_dim]
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+            o = index_to_position(out_index, out_strides)
+            for s in range(reduce_size):
+                out_index[reduce_dim] = s
+                j = index_to_position(out_index, a_strides)
+                out[o] = fn(out[o], a_storage[j])
 
     return _reduce
 

@@ -66,11 +66,11 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
         out_index : return index corresponding to position.
 
     """
-    index = []
-    for dim in reversed(shape):
-        index.append(ordinal % dim)
-        ordinal = ordinal // dim
-    out_index[:] = list(reversed(index))
+    cur_ord = ordinal + 0
+    for i in range(len(shape) - 1, -1, -1):
+        sh = shape[i]
+        out_index[i] = int(cur_ord % sh)
+        cur_ord = cur_ord // sh
 
 
 def broadcast_index(
@@ -94,14 +94,12 @@ def broadcast_index(
         None
 
     """
-    out_index[:] = 0
-    for i in range(len(shape)):
-        if big_shape[-i - 1] == 1 or shape[-i - 1] == 1:
-            out_index[-i - 1] = 0
-        elif big_shape[-i - 1] == shape[-i - 1]:
-            out_index[-i - 1] = big_index[-i - 1]
+    for i, s in enumerate(shape):
+        if s > 1:
+            out_index[i] = big_index[i + (len(big_shape) - len(shape))]
         else:
-            raise IndexingError("cannot broadcast")
+            out_index[i] = 0
+        return None
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -121,25 +119,23 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         IndexingError : if cannot broadcast
 
     """
-    unionShape = []
-    len1 = len(shape1)
-    len2 = len(shape2)
-    if len1 < len2:
-        shape1 = (1,) * (len2 - len1) + tuple(shape1)
-    elif len2 < len1:
-        shape2 = (1,) * (len1 - len2) + tuple(shape2)
-
-    for i, j in zip(shape1, shape2):
-        if i == 1:
-            unionShape.append(j)
-        elif j == 1:
-            unionShape.append(i)
-        elif j == i:
-            unionShape.append(i)
+    a, b = shape1, shape2
+    m = max(len(a), len(b))
+    c_rev = [0] * m
+    a_rev = list(reversed(a))
+    b_rev = list(reversed(b))
+    for i in range(m):
+        if i >= len(a):
+            c_rev[i] = b_rev[i]
+        elif i >= len(b):
+            c_rev[i] = a_rev[i]
         else:
-            raise IndexingError("cannot broadcast")
-
-    return tuple(unionShape)
+            c_rev[i] = max(a_rev[i], b_rev[i])
+            if a_rev[i] != c_rev[i] and a_rev[i] != 1:
+                raise IndexingError(f"Broadcast failure {a} {b}")
+            if b_rev[i] != c_rev[i] and b_rev[i] != 1:
+                raise IndexingError(f"Broadcast failure {a} {b}")
+    return tuple(reversed(c_rev))
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
@@ -344,11 +340,12 @@ class TensorData:
         assert list(sorted(order)) == list(
             range(len(self.shape))
         ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
-
-        new_shape = tuple(self.shape[dim] for dim in order)
-        new_strides = tuple(self.strides[dim] for dim in order)
-        tensor = TensorData(self._storage, new_shape, new_strides)
-        return tensor
+        
+        return TensorData(
+            self._storage,
+            tuple([self.shape[o] for o in order]),
+            tuple([self._strides[o] for o in order]),
+        )
 
     def to_string(self) -> str:
         """Convert to string"""

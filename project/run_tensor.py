@@ -20,27 +20,23 @@ class Network(minitorch.Module):
         self.layer3 = Linear(hidden_layers, 1)
 
     def forward(self, x):
-        middle = self.layer1.forward(x).relu()
-        hidden = self.layer2.forward(middle).relu()
-        output = self.layer3.forward(hidden).sigmoid()
-        return output
+        h = self.layer1.forward(x).relu()
+        h = self.layer2.forward(h).relu()
+        return self.layer3.forward(h).sigmoid()
 
 class Linear(minitorch.Module):
     def __init__(self, in_size, out_size):
         super().__init__()
-        backend = minitorch.TensorBackend(minitorch.SimpleOps)
-        random_weights = [(2 * (random.random() - 0.5)) for _ in range(in_size * out_size)]
-        random_bias = [(2 * (random.random() - 0.5)) for _ in range(out_size)]
+        self.weights = RParam(in_size, out_size)
+        self.bias = RParam(out_size)
+        self.out_size = out_size
 
-        self.weights = self.add_parameter("weight", minitorch.Tensor.make(random_weights, (in_size, out_size), backend=backend))
-        self.bias = self.add_parameter("bias", minitorch.Tensor.make(random_bias, (1, out_size), backend=backend))
-
-    def forward(self, x: minitorch.Tensor):
-        x_reshaped = x.view(*x.shape, 1)
-        product = x_reshaped * self.weights.value
-        result = product.sum(1).view(product.shape[0], product.shape[2])
-        result = result + self.bias.value
-        return result
+    def forward(self, x):
+        batch, in_size = x.shape
+        return (
+            self.weights.value.view(1, in_size, self.out_size) 
+            * x.view(batch, in_size, 1)
+            ).sum(1).view(batch, self.out_size) + self.bias.value.view(self.out_size)
 
 def default_log_fn(epoch, total_loss, correct, losses):
     print("Epoch ", epoch, " loss ", total_loss, "correct", correct)

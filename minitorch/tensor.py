@@ -10,6 +10,7 @@ import numpy as np
 from . import operators
 from .autodiff import Context, Variable, backpropagate
 from .tensor_data import TensorData
+from .tensor_functions import tensor
 
 # Comment these out if not yet implemented
 from .tensor_functions import (
@@ -374,47 +375,39 @@ class Tensor:
     @property
     def size(self) -> int:
         """Returns the total number of elements in the tensor."""
-        return int(operators.prod(self.shape))
+        return self._tensor.size
 
     @property
     def dims(self) -> int:
         """Returns the number of dimensions of the tensor."""
-        return len(self.shape)
+        return self._tensor.dims
 
-    def __add__(self, b: TensorLike):
-        b = self._ensure_tensor(b)
-        return Add.apply(self, b)
+    def __add__(self, b: TensorLike) -> Tensor:
+        return Add.apply(self, self._ensure_tensor(b))
 
-    def __sub__(self, b: TensorLike):
-        b_tensor = self._ensure_tensor(b)
-        return Add.apply(self, Neg.apply(b_tensor))
+    def __sub__(self, b: TensorLike) -> Tensor:
+        return Add.apply(self, -self._ensure_tensor(b))
 
-    def __neg__(self):
+    def __neg__(self) -> Tensor:
         return Neg.apply(self)
 
-    def __mul__(self, b: TensorLike):
-        b = self._ensure_tensor(b)
-        return Mul.apply(self, b)
+    def __mul__(self, b: TensorLike) -> Tensor:
+        return Mul.apply(self, self._ensure_tensor(b))
 
-    def __lt__(self, b: TensorLike):
-        b = self._ensure_tensor(b)
-        return LT.apply(self, b)
+    def __lt__(self, b: TensorLike) -> Tensor:
+        return LT.apply(self, self._ensure_tensor(b))
 
-    def __eq__(self, b: TensorLike):
-        b = self._ensure_tensor(b)
-        return EQ.apply(self, b)
+    def __eq__(self, b: TensorLike) -> Tensor: # type: ignore[override]
+        return EQ.apply(self, self._ensure_tensor(b))
 
-    def __gt__(self, b: TensorLike):
-        b = self._ensure_tensor(b)
-        return LT.apply(b, self)
+    def __gt__(self, b: TensorLike) -> Tensor:
+        return LT.apply(self._ensure_tensor(b), self)
 
-    def __radd__(self, b: TensorLike):
-        b = self._ensure_tensor(b)
-        return Add.apply(b, self)
+    def __radd__(self, b: TensorLike) -> Tensor:
+        return self + b
 
-    def __rmul__(self, b: TensorLike):
-        b = self._ensure_tensor(b)
-        return Mul.apply(b, self)
+    def __rmul__(self, b: TensorLike) -> Tensor:
+        return self * b
 
     def all(self, dim: Optional[int] = None) -> Tensor:
         """Compute the logical AND across dimensions of the tensor.
@@ -431,11 +424,11 @@ class Tensor:
 
         """
         if dim is None:
-            return All.apply(self)
+            return All.apply(self.view(self.size), self._ensure_tensor(0))
         else:
             return All.apply(self, self._ensure_tensor(dim))
 
-    def is_close(self, b: TensorLike) -> Tensor:
+    def is_close(self, y: Tensor) -> Tensor:
         """Check if two tensors are element-wise close to each other, within a tolerance.
 
         Args:
@@ -449,8 +442,7 @@ class Tensor:
             element in `b`.
 
         """
-        b = self._ensure_tensor(b)
-        return IsClose.apply(self, b)
+        return IsClose.apply(self, y)
 
     def sigmoid(self) -> Tensor:
         """Compute the sigmoid activation function.
@@ -511,7 +503,7 @@ class Tensor:
 
         """
         if dim is None:
-            return Sum.apply(self)
+            return Sum.apply(self.contiguous().view(self.size), self._ensure_tensor(0))
         else:
             return Sum.apply(self, self._ensure_tensor(dim))
 
@@ -529,12 +521,12 @@ class Tensor:
             specified dimension or the overall mean if no dimension is provided.
 
         """
-        if dim is None:
-            return Sum.apply(self) * (1 / self.size)
+        if dim is not None:
+            return self.sum(dim) / self.shape[dim]
         else:
-            return Sum.apply(self, self._ensure_tensor(dim)) * (1 / self.shape[dim])
+            return self.sum() / self.size
 
-    def permute(self, *dim: int) -> Tensor:
+    def permute(self, *order: int) -> Tensor:
         """Permute the dimensions of the tensor.
 
         This method rearranges the dimensions of the tensor according to
@@ -551,13 +543,9 @@ class Tensor:
             specified order.
 
         """
-        if len(dim) == 0:
-            return self
-        return Permute.apply(
-            self, Tensor.make(list(dim), (len(dim),), backend=self.backend)
-        )
+        return Permute.apply(self, tensor(list(order)))
 
-    def view(self, *dim: int) -> Tensor:
+    def view(self, *shape: int) -> Tensor:
         """Reshape the tensor without changing its data.
 
         This method returns a new tensor with the same data but with a
@@ -574,11 +562,7 @@ class Tensor:
             as the original tensor.
 
         """
-        if len(dim) == 0:
-            return self
-        return View.apply(
-            self, Tensor.make(list(dim), (len(dim),), backend=self.backend)
-        )
+        return View.apply(self, tensor(list(shape)))
 
     def zero_grad_(self) -> None:
         """Reset the gradient of the tensor to None.
