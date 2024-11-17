@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from operator import index
 from typing import TYPE_CHECKING, TypeVar, Any
 
 import numpy as np
@@ -372,8 +373,34 @@ def _tensor_matrix_multiply(
     b_batch_stride = b_strides[0] if b_shape[0] > 1 else 0
 
     # TODO: Implement for Task 3.2.
-    raise NotImplementedError("Need to implement for Task 3.2")
+    reduce_size = a_shape[-1] # should be equal to a_shape[-2]
+    # out_index = np.empty((len(out), len(out_shape)), dtype=np.int32)
+    for i in prange(len(out)):
+        # get the index of out given the position of out
+        # cur_ord = i + 0
+        # for j in range(len(out_shape) - 1, -1, -1):
+        #     sh = out_shape[j]
+        #     out_index[i][j] = int(cur_ord % sh)
+        #     cur_ord = cur_ord // sh
+        # a_pos = (out_index[i][0] * a_batch_stride) + (out_index[i][-2] * a_strides[-2])
+        # b_pos = (out_index[i][0] * b_batch_stride) + (out_index[i][-1] * b_strides[-1])
+        cur_ord = i + 0
+        batch_idx = cur_ord // (out_shape[-2] * out_shape[-1])
+        cur_ord %= (out_shape[-2] * out_shape[-1])
+        row_idx = cur_ord // out_shape[-1]
+        col_idx = cur_ord % out_shape[-1]
 
+        a_pos = (batch_idx * a_batch_stride) + (row_idx * a_strides[-2])
+        b_pos = (batch_idx * b_batch_stride) + (col_idx * b_strides[-1])
+
+        a_change = a_strides[-1]
+        b_change = b_strides[-2]
+        sum = 0
+        for _ in range(reduce_size):
+            sum += a_storage[a_pos] * b_storage[b_pos]
+            a_pos += a_change
+            b_pos += b_change
+        out[i] = sum
 
 tensor_matrix_multiply = njit(_tensor_matrix_multiply, parallel=True)
 assert tensor_matrix_multiply is not None
