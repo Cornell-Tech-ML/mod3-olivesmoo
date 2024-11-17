@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from operator import index
+from re import A
 from typing import TYPE_CHECKING, TypeVar, Any
 
 import numpy as np
@@ -374,24 +375,45 @@ def _tensor_matrix_multiply(
 
     # TODO: Implement for Task 3.2.
     reduce_size = a_shape[-1] # should be equal to a_shape[-2]
-    # out_index = np.empty((len(out), len(out_shape)), dtype=np.int32)
     for i in prange(len(out)):
-        # get the index of out given the position of out
         # cur_ord = i + 0
-        # for j in range(len(out_shape) - 1, -1, -1):
-        #     sh = out_shape[j]
-        #     out_index[i][j] = int(cur_ord % sh)
-        #     cur_ord = cur_ord // sh
-        # a_pos = (out_index[i][0] * a_batch_stride) + (out_index[i][-2] * a_strides[-2])
-        # b_pos = (out_index[i][0] * b_batch_stride) + (out_index[i][-1] * b_strides[-1])
+        # batch_idx = cur_ord // (out_shape[-2] * out_shape[-1])
+        # cur_ord %= (out_shape[-2] * out_shape[-1])
+        # row_idx = cur_ord // out_shape[-1]
+        # col_idx = cur_ord % out_shape[-1]            
+
+        # a_pos = (batch_idx * a_batch_stride) + (row_idx * a_strides[-2])
+        # b_pos = (batch_idx * b_batch_stride) + (col_idx * b_strides[-1])
+
+        #=====================================
         cur_ord = i + 0
+        a_pos = 0
+        b_pos = 0
+
         batch_idx = cur_ord // (out_shape[-2] * out_shape[-1])
         cur_ord %= (out_shape[-2] * out_shape[-1])
         row_idx = cur_ord // out_shape[-1]
         col_idx = cur_ord % out_shape[-1]
+        
+        # a_pos = (batch_idx * a_batch_stride) 
+        # b_pos = (batch_idx * b_batch_stride) 
 
-        a_pos = (batch_idx * a_batch_stride) + (row_idx * a_strides[-2])
-        b_pos = (batch_idx * b_batch_stride) + (col_idx * b_strides[-1])
+        for j in range(len(out_shape) - 3, -1, -1):
+            sh = out_shape[j]
+            idx = batch_idx % sh
+            if j  == len(a_shape) - 3:
+                a_pos += idx * a_batch_stride
+            elif j < len(a_shape) - 3:
+                a_pos += a_strides[j] * idx
+
+            if j == len(b_shape) - 3:
+                b_pos += idx * b_batch_stride
+            elif j < len(b_shape) - 3:
+                b_pos += idx * b_strides[j]
+            batch_idx = batch_idx // sh
+        
+        a_pos += row_idx * a_strides[-2]
+        b_pos += col_idx * b_strides[-1]
 
         a_change = a_strides[-1]
         b_change = b_strides[-2]
