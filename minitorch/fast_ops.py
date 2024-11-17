@@ -183,8 +183,8 @@ def tensor_map(
                 o = index_to_position(out_indices[i], out_strides)
                 j = index_to_position(in_indices[i], in_strides)
                 out[o] = fn(in_storage[j])
-                print(out[o])
-            print(out)
+            #     print(out[o])
+            # print(out)
 
         '''
             out_index: Index = np.zeros(MAX_DIMS, np.int32)
@@ -394,7 +394,7 @@ def _tensor_matrix_multiply(
         cur_ord %= (out_shape[-2] * out_shape[-1])
         row_idx = cur_ord // out_shape[-1]
         col_idx = cur_ord % out_shape[-1]
-        
+
         # a_pos = (batch_idx * a_batch_stride) 
         # b_pos = (batch_idx * b_batch_stride) 
 

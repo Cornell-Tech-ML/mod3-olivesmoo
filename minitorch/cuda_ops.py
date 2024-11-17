@@ -174,8 +174,12 @@ def tensor_map(
         in_index = cuda.local.array(MAX_DIMS, numba.int32)
         i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
         # TODO: Implement for Task 3.3.
-        raise NotImplementedError("Need to implement for Task 3.3")
-
+        if i < len(out):
+            to_index(i, out_shape, out_index[i])
+            broadcast_index(out_index[i], out_shape, in_shape, in_index[i])
+            o = index_to_position(out_index[i], out_strides)
+            j = index_to_position(in_index[i], in_strides)
+            out[o] = fn(in_storage[j])
     return cuda.jit()(_map)  # type: ignore
 
 
@@ -215,7 +219,7 @@ def tensor_zip(
         a_index = cuda.local.array(MAX_DIMS, numba.int32)
         b_index = cuda.local.array(MAX_DIMS, numba.int32)
         i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
-
+        
         # TODO: Implement for Task 3.3.
         raise NotImplementedError("Need to implement for Task 3.3")
 
