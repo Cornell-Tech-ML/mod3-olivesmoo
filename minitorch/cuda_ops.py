@@ -488,8 +488,10 @@ def _tensor_matrix_multiply(
             b_shared[pi, pj] = 0.0
         cuda.syncthreads()
         
-        for local_k in range(BLOCK_DIM):
-            acc += a_shared[pi, local_k] * b_shared[local_k, pj]
+        for local_k in range(min(BLOCK_DIM, a_shape[-1] - k)):
+            # acc += a_shared[pi, local_k] * b_shared[local_k, pj]
+            acc += a_shared[cuda.threadIdx.x, local_k] * b_shared[local_k, cuda.threadIdx.y]
+
     if i < out_shape[-2] and j < out_shape[-1]:
         index_array = cuda.local.array(3, dtype=numba.int32)
         index_array[0] = batch
