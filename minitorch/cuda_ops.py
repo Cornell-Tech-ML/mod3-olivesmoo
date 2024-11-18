@@ -478,11 +478,11 @@ def _tensor_matrix_multiply(
     size = a_shape[-1] # should equal b_shape[-2]
     for k in range(0, size, BLOCK_DIM):
         if batch < out_shape[0] and i < a_shape[-2] and k + pj < size:
-            a_index = batch * a_batch_stride + i * a_strides[1] + k * a_strides[2]
+            a_index = batch * a_batch_stride + i * a_strides[1] + (k+pj) * a_strides[2]
             a_shared[pi, pj] = a_storage[a_index]
             # a_shared[pi, pj] = a[i, k + pj]
         if batch < out_shape[0] and j < b_shape[-1] and k + pi < size:
-            b_index = batch * b_batch_stride + k * b_strides[1] + j * b_strides[2]
+            b_index = batch * b_batch_stride + (k+pi) * b_strides[1] + j * b_strides[2]
             b_shared[pi, pj] = b_storage[b_index]
             # b_shared[pi, pj] = b[k + pi, j]
 
