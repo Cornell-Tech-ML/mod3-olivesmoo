@@ -473,31 +473,32 @@ def _tensor_matrix_multiply(
     #    b) Copy into shared memory for b matrix
     #    c) Compute the dot produce for position c[i, j]
     # TODO: Implement for Task 3.4.
+    out_index = cuda.local.array(MAX_DIMS, numba.int32)
+    a_index = cuda.local.array(MAX_DIMS, numba.int32)
+    b_index = cuda.local.array(MAX_DIMS, numba.int32)
     acc = 0
-    a_offset = batch * a_batch_stride
-    b_offset = batch * b_batch_stride
-    for k in range(0, a_shape[-1], BLOCK_DIM):
-        if i < a_shape[-2] and k + pj < a_shape[-1]:
-            a_shared[pi, pj] = a_storage[a_offset + index_to_position((i, k+pj), a_strides)]
-        else:
-            a_shared[pi, pj] = 0.0
-        if j < b_shape[-1] and k + pi < b_shape[-2]:
-            #b_shared[pi, pj] = b[k + pi, j]
-            b_shared[pi, pj] = b_storage[b_offset + index_to_position((k+pi, j), b_strides)]
-        else:
-            b_shared[pi, pj] = 0.0
+
+    size = a_shape[-1] # should equal b_shape[-2]
+    for k in range(0, size, BLOCK_DIM):
+        if i < a_shape[-2] and k + pj < size:
+            a_index = batch * a_batch_stride + i * a_strides[1] + k * a_strides[2]
+            a_shared[pi, pj] = a_storage[a_index]
+            # a_shared[pi, pj] = a[i, k + pj]
+            # a_shared[pi, pj] = a_storage[a_offset + index_to_position((i, k+pj), a_strides)]
+        if j < b_shape[-1] and k + pi < size:
+            b_index = batch * b_batch_stride + k * b_strides[1] + j * b_strides[2]
+            b_shared[pi, pj] = b_storage[b_index]
+            # b_shared[pi, pj] = b[k + pi, j]
+            # b_shared[pi, pj] = b_storage[b_offset + index_to_position((k+pi, j), b_strides)]
+
         cuda.syncthreads()
         
-        for local_k in range(min(BLOCK_DIM, a_shape[-1] - k)):
-            # acc += a_shared[pi, local_k] * b_shared[local_k, pj]
-            acc += a_shared[cuda.threadIdx.x, local_k] * b_shared[local_k, cuda.threadIdx.y]
+        for local_k in range(min(BLOCK_DIM, size - k)):
+            acc += a_shared[pi, local_k] * b_shared[local_k, pj]
+            # acc += a_shared[cuda.threadIdx.x, local_k] * b_shared[local_k, cuda.threadIdx.y]
 
-    if i < out_shape[-2] and j < out_shape[-1]:
-        index_array = cuda.local.array(3, dtype=numba.int32)
-        index_array[0] = batch
-        index_array[1] = i
-        index_array[2] = j
-        out_index = index_to_position(index_array, out_strides)
+    if batch < out_shape[0] and i < out_shape[-2] and j < out_shape[-1]:
+        out_index = batch * out_strides[0] + i * out_strides[-2] + j * out_strides[-1]
         out[out_index] = acc
 
 
