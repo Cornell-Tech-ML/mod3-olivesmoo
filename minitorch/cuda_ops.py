@@ -381,8 +381,23 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
     """
     BLOCK_DIM = 32
     # TODO: Implement for Task 3.3.
-    raise NotImplementedError("Need to implement for Task 3.3")
+    a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
+    b_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
 
+    i = cuda.blockId.x * cuda.blockDim.x + cuda.threadIdx.x
+    j = cuda.blockId.y * cuda.blockDim.y + cuda.threadIdx.y
+    local_i = cuda.threadId.x
+    local_j = cuda.threadId.y
+
+    if i < size and j < size:
+        a_shared[local_i, local_j] = a[i, j]
+        b_shared[local_i, local_j] = b[i, j]
+        cuda.syncthreads()
+
+        acc = 0
+        for k in range(size):
+            acc += a_shared[local_i, k] * b_shared[k, local_j]
+        out[i, j] = acc
 
 jit_mm_practice = jit(_mm_practice)
 
