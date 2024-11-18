@@ -397,7 +397,7 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
         acc = 0
         for k in range(size):
             acc += a_shared[local_i, k] * b_shared[k, local_j]
-        out[i, j] = acc
+        out[i * size + j] = acc
 
 
     # i = numba.cuda.blockIdx.x * TPB + numba.cuda.threadIdx.x
