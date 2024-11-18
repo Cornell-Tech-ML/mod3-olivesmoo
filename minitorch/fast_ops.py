@@ -376,44 +376,44 @@ def _tensor_matrix_multiply(
     # TODO: Implement for Task 3.2.
     reduce_size = a_shape[-1] # should be equal to a_shape[-2]
     for i in prange(len(out)):
-        # cur_ord = i + 0
-        # batch_idx = cur_ord // (out_shape[-2] * out_shape[-1])
-        # cur_ord %= (out_shape[-2] * out_shape[-1])
-        # row_idx = cur_ord // out_shape[-1]
-        # col_idx = cur_ord % out_shape[-1]            
-
-        # a_pos = (batch_idx * a_batch_stride) + (row_idx * a_strides[-2])
-        # b_pos = (batch_idx * b_batch_stride) + (col_idx * b_strides[-1])
-
-        #=====================================
         cur_ord = i + 0
-        a_pos = 0
-        b_pos = 0
-
         batch_idx = cur_ord // (out_shape[-2] * out_shape[-1])
         cur_ord %= (out_shape[-2] * out_shape[-1])
         row_idx = cur_ord // out_shape[-1]
-        col_idx = cur_ord % out_shape[-1]
+        col_idx = cur_ord % out_shape[-1]            
 
-        # a_pos = (batch_idx * a_batch_stride) 
-        # b_pos = (batch_idx * b_batch_stride) 
+        a_pos = (batch_idx * a_batch_stride) + (row_idx * a_strides[-2])
+        b_pos = (batch_idx * b_batch_stride) + (col_idx * b_strides[-1])
 
-        for j in range(len(out_shape) - 3, -1, -1):
-            sh = out_shape[j]
-            idx = batch_idx % sh
-            if j  == len(a_shape) - 3:
-                a_pos += idx * a_batch_stride
-            elif j < len(a_shape) - 3:
-                a_pos += a_strides[j] * idx
+        #=====================================
+        # cur_ord = i + 0
+        # a_pos = 0
+        # b_pos = 0
 
-            if j == len(b_shape) - 3:
-                b_pos += idx * b_batch_stride
-            elif j < len(b_shape) - 3:
-                b_pos += idx * b_strides[j]
-            batch_idx = batch_idx // sh
+        # batch_idx = cur_ord // (out_shape[-2] * out_shape[-1])
+        # cur_ord %= (out_shape[-2] * out_shape[-1])
+        # row_idx = cur_ord // out_shape[-1]
+        # col_idx = cur_ord % out_shape[-1]
+
+        # # a_pos = (batch_idx * a_batch_stride) 
+        # # b_pos = (batch_idx * b_batch_stride) 
+
+        # for j in range(len(out_shape) - 3, -1, -1):
+        #     sh = out_shape[j]
+        #     idx = batch_idx % sh
+        #     if j  == len(a_shape) - 3:
+        #         a_pos += idx * a_batch_stride
+        #     elif j < len(a_shape) - 3:
+        #         a_pos += a_strides[j] * idx
+
+        #     if j == len(b_shape) - 3:
+        #         b_pos += idx * b_batch_stride
+        #     elif j < len(b_shape) - 3:
+        #         b_pos += idx * b_strides[j]
+        #     batch_idx = batch_idx // sh
         
-        a_pos += row_idx * a_strides[-2]
-        b_pos += col_idx * b_strides[-1]
+        # a_pos += row_idx * a_strides[-2]
+        # b_pos += col_idx * b_strides[-1]
 
         a_change = a_strides[-1]
         b_change = b_strides[-2]

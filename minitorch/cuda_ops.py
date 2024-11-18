@@ -381,33 +381,31 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
     """
     BLOCK_DIM = 32
     # TODO: Implement for Task 3.3.
-    # a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
-    # b_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
+    a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
+    b_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
 
-    # i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
-    # j = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
-    # local_i = cuda.threadIdx.x
-    # local_j = cuda.threadIdx.y
+    i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
+    j = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
+    local_i = cuda.threadIdx.x
+    local_j = cuda.threadIdx.y
 
-    # if i < size and j < size:
-    #     a_shared[local_i, local_j] = a[i * size + j] #a[i, j]
-    #     b_shared[local_i, local_j] = b[i * size + j] #b[i, j]
-
-    #     cuda.syncthreads()
-
-    #     acc = 0.0
-    #     for k in range(size):
-    #         acc += a_shared[local_i, k] * b_shared[k, local_j]
-    #     out[i * size + j] = acc
-
-
-    # i = numba.cuda.blockIdx.x * TPB + numba.cuda.threadIdx.x
-    i = cuda.blockIdx.x * BLOCK_DIM + cuda.threadIdx.x
-    # j = numba.cuda.blockIdx.y * TPB + numba.cuda.threadIdx.y
-    j = cuda.blockIdx.y * BLOCK_DIM + cuda.threadIdx.y
     if i < size and j < size:
+        a_shared[local_i, local_j] = a[i * size + j] #a[i, j]
+        b_shared[local_i, local_j] = b[i * size + j] #b[i, j]
+
+        cuda.syncthreads()
+
+        acc = 0.0
         for k in range(size):
-            out[i * size + j] += a[i * size + k] * b[k * size + j]
+            acc += a_shared[local_i, k] * b_shared[k, local_j]
+        out[i * size + j] = acc
+
+
+    # i = cuda.blockIdx.x * BLOCK_DIM + cuda.threadIdx.x
+    # j = cuda.blockIdx.y * BLOCK_DIM + cuda.threadIdx.y
+    # if i < size and j < size:
+    #     for k in range(size):
+    #         out[i * size + j] += a[i * size + k] * b[k * size + j]
 
 jit_mm_practice = jit(_mm_practice)
 
