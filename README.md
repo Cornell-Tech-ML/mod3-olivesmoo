@@ -32,6 +32,7 @@ The files that will be synced are:
         minitorch/tensor_data.py minitorch/tensor_functions.py minitorch/tensor_ops.py minitorch/operators.py minitorch/scalar.py minitorch/scalar_functions.py minitorch/module.py minitorch/autodiff.py minitorch/module.py project/run_manual.py project/run_scalar.py project/run_tensor.py minitorch/operators.py minitorch/module.py minitorch/autodiff.py minitorch/tensor.py minitorch/datasets.py minitorch/testing.py minitorch/optim.py
 
 ## Module 3.1 and 3.2
+```
 ================================================================================
  Parallel Accelerator Optimizing:  Function tensor_map.<locals>._map, 
 /Users/oliviamei/cornell_stuff/mle_codebase/mod3-olivesmoo/minitorch/fast_ops.py
@@ -329,3 +330,4 @@ Parallel structure is already optimal.
 Allocation hoisting:
 No allocation hoisting found
 None
+```
