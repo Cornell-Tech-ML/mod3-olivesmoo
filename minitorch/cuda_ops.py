@@ -333,9 +333,11 @@ def tensor_reduce(
             j = index_to_position(out_index, a_strides) # first position of the dim we want to accumulate
             offset = a_strides[reduce_dim] * pos
             cache[pos] = a_storage[j + offset] #some offset(involves multiplying strides by pos)]
+        else:
+            cache[pos] = reduce_value
 
         cuda.syncthreads()
-
+        print("the cache", cache)
         stride = 1
         while stride < BLOCK_DIM:
             if pos % (2 * stride) == 0:
