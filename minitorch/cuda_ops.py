@@ -327,16 +327,35 @@ def tensor_reduce(
         pos = cuda.threadIdx.x
 
         # TODO: Implement for Task 3.3.
-        i = out * BLOCK_DIM + pos
-        if i < out_size:
-            to_index(i, a_shape, out_index)
-            o = index_to_position(out_index, out_strides)
-            j = index_to_position(out_index, a_strides)
-            cache[i] = reduce_value
-            for _ in range(a_shape[reduce_dim]):
-                cache[i] = fn(cache[i], a_storage[j])
-                j += a_strides[reduce_dim]
-            out[i] = cache[i]
+        reduce_size = a_shape[reduce_dim]
+        if pos < reduce_size:
+            to_index(out_pos, out_shape, out_index) #index of output
+            j = index_to_position(out_index, a_strides) # first position of the dim we want to accumulate
+            offset = a_strides[reduce_dim] * pos
+            cache[pos] = a_storage[j + offset] #some offset(involves multiplying strides by pos)]
+
+        cuda.syncthreads()
+
+        stride = 1
+        while stride < BLOCK_DIM:
+            if pos % (2 * stride) == 0:
+                cache[pos] = fn(cache[pos], cache[pos + stride])
+            cuda.syncthreads()
+            stride *= 2
+        if pos == 0:
+            out[out_pos] = cache[0]
+
+        # summation algorithm
+
+        # if i < out_size:
+        #     to_index(i, a_shape, out_index)
+        #     o = index_to_position(out_index, out_strides)
+        #     j = index_to_position(out_index, a_strides)
+        #     cache[i] = reduce_value
+        #     for _ in range(a_shape[reduce_dim]):
+        #         cache[i] = fn(cache[i], a_storage[j])
+        #         j += a_strides[reduce_dim]
+        #     out[i] = cache[i]
 
 
 
