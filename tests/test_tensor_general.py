@@ -12,6 +12,8 @@ from minitorch import MathTestVariable, Tensor, TensorBackend, grad_check
 
 from .strategies import assert_close, small_floats
 from .tensor_strategies import assert_close_tensor, shaped_tensors, tensors
+import numpy as np # TODO: Delete
+
 
 one_arg, two_arg, red_arg = MathTestVariable._comp_testing()
 
@@ -229,8 +231,12 @@ if numba.cuda.is_available():
         y = minitorch.tensor(y1, backend=shared["cuda"])
         z2 = x @ y
 
+        z_expected = np.dot(x1, y1) #TODO: Delete
+
         for i in range(2):
             for j in range(2):
+                assert np.isclose(z[i, j], z_expected[i, j], atol=1e-5), f"Mismatch at ({i},{j}) for z" #TODO: Delete
+                assert np.isclose(z2[i, j], z_expected[i, j], atol=1e-5), f"Mismatch at ({i},{j}) for z2" #TODO: Delete
                 assert_close(z[i, j], z2[i, j])
 
     @pytest.mark.task3_4
