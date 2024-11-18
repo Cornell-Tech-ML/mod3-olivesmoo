@@ -508,7 +508,7 @@ def _tensor_matrix_multiply(
     #     for k in range(TPB):
     #         t += sharedA[local_i, k] * sharedB[k, local_j]
     # out[i, j] = t
-    raise NotImplementedError("Need to implement for Task 3.4")
+    # raise NotImplementedError("Need to implement for Task 3.4")
 
 
 tensor_matrix_multiply = jit(_tensor_matrix_multiply)
