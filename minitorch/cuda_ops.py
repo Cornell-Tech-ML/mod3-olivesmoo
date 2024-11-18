@@ -489,7 +489,11 @@ def _tensor_matrix_multiply(
         for local_k in range(BLOCK_DIM):
             acc += a_shared[pi, local_k] * b_shared[local_k, pj]
     if i < out_shape[-2] and j < out_shape[-1]:
-        out_index = index_to_position((batch, i, j), out_strides)
+        index_array = cuda.local.array(3, dtype=numba.int32)
+        index_array[0] = batch
+        index_array[1] = i
+        index_array[2] = j
+        out_index = index_to_position(index_array, out_strides)
         out[out_index] = acc
 
 
