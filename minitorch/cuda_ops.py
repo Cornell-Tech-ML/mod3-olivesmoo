@@ -327,23 +327,36 @@ def tensor_reduce(
         pos = cuda.threadIdx.x
 
         # TODO: Implement for Task 3.3.
-        # raise NotImplementedError("Need to implement for Task 3.3")
-        i = out_pos * BLOCK_DIM + pos # global index
+        i = out * BLOCK_DIM + pos
         if i < out_size:
             to_index(i, a_shape, out_index)
-            # o = index_to_position(out_index, out_strides) # out 1d position
+            o = index_to_position(out_index, out_strides)
             j = index_to_position(out_index, a_strides)
-            cache[pos] = a_storage[j]
-        cuda.syncthreads()
-        stride = BLOCK_DIM // 2
-        while stride > 0:
-            if pos < stride:
-                cache[pos] = fn(cache[pos], cache[pos + stride])
-            stride //= 2
-            cuda.syncthreads()
+            cache[i] = reduce_value
+            for _ in range(a_shape[reduce_dim]):
+                cache[i] = fn(cache[i], a_storage[j])
+                j += a_strides[reduce_dim]
+            out[i] = cache[i]
 
-        if pos == 0:
-            out[out_pos] = cache[0]
+
+
+        # raise NotImplementedError("Need to implement for Task 3.3")
+        # i = out_pos * BLOCK_DIM + pos # global index
+        # if i < out_size:
+        #     to_index(i, a_shape, out_index)
+        #     # o = index_to_position(out_index, out_strides) # out 1d position
+        #     j = index_to_position(out_index, a_strides)
+        #     cache[pos] = a_storage[j]
+        # cuda.syncthreads()
+        # stride = BLOCK_DIM // 2
+        # while stride > 0:
+        #     if pos < stride:
+        #         cache[pos] = fn(cache[pos], cache[pos + stride])
+        #     stride //= 2
+        #     cuda.syncthreads()
+
+        # if pos == 0:
+        #     out[out_pos] = cache[0]
 
     return jit(_reduce)  # type: ignore
 

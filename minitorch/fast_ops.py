@@ -309,7 +309,7 @@ def tensor_reduce(
             j = index_to_position(out_indices[i], a_strides) # get first position of the dim we want to accumulate
             c = a_strides[reduce_dim] # difference between indices of reduce dim
             for _ in range(reduce_size):
-                out[i] = fn(out[o], a_storage[j])
+                out[o] = fn(out[o], a_storage[j])
                 j += c
     
         '''
