@@ -386,8 +386,8 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
 
     i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
     j = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
-    local_i = cuda.threadId.x
-    local_j = cuda.threadId.y
+    local_i = cuda.threadIdx.x
+    local_j = cuda.threadIdx.y
 
     if i < size and j < size:
         a_shared[local_i, local_j] = a[i, j]
