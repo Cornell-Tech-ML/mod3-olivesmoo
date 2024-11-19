@@ -339,3 +339,11 @@ None
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 100 --DATASET split --RATE 0.05```
 <img width="630" alt="Screenshot 2024-11-19 at 12 04 57 AM" src="https://github.com/user-attachments/assets/e224bc9d-1af8-4363-96cc-45c0292a865e">
 
+```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND gpu --HIDDEN 100 --DATASET xor --RATE 0.05```
+<img width="621" alt="Screenshot 2024-11-19 at 1 20 50 AM" src="https://github.com/user-attachments/assets/5f2aabec-4d3a-43f4-beaf-63f57e53b3e5">
+
+
+```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 100 --DATASET xor --RATE 0.05```
+<img width="630" alt="Screenshot 2024-11-19 at 12 12 45 AM" src="https://github.com/user-attachments/assets/b3ddb9a9-c700-441b-8609-2fc2af779fa1">
+
+
