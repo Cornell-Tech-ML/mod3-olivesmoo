@@ -250,7 +250,7 @@ def tensor_zip(
                 broadcast_index(out_indices[i], out_shape, b_shape, b_indices[i])
                 k = index_to_position(b_indices[i], b_strides)
                 out[o] = fn(a_storage[j], b_storage[k])
-            print(out)
+            # print(out)
     
     '''
     
