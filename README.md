@@ -334,6 +334,17 @@ No allocation hoisting found
 None
 ```
 
+## Module 3.4
+| Size  | CPU(s) | GPU(s) |
+| ------------- | ------------- | -------------|
+| 64  | 0.013601  | 0.011771|
+| 128  | 0.038598  | 0.035355
+| 256  | 0.205093  | 0.073692
+| 512  | 1.100686  | 0.221861
+| 1024  | 8.617140  | 1.259826
+<img width="662" alt="matrix multiplication times" src="https://github.com/user-attachments/assets/a80eb5da-9fec-4c37-9354-f7a1599343cc">
+
+
 ## Module 3.5
 ### Simple
 CPU
