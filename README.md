@@ -351,13 +351,35 @@ CPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 100 --RATE 0.05```
 
-<img width="655" alt="cpu simple 100" src="https://github.com/user-attachments/assets/0ac02fc1-4f9d-4594-8b74-3e996fa4a4fb">
+Average time per epoch: 0.14616 seconds
+
+<img width="663" alt="cpu simple 100" src="https://github.com/user-attachments/assets/859f0e2e-ab00-4632-a4c2-c3d47d14c43e">
 
 GPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND gpu --HIDDEN 100 --RATE 0.05```
 
-<img width="647" alt="gpu simple 100" src="https://github.com/user-attachments/assets/c52a7ef2-15ad-487d-8feb-873ec1d27f83">
+Average time per epoch: 2.00573 seconds
+
+<img width="627" alt="gpu simple 100" src="https://github.com/user-attachments/assets/ff5f4012-4dc6-4b60-abca-0fde7fdb063e">
+
+### Simple - 500 hidden
+CPU
+
+```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 500 --RATE 0.05```
+
+Average time per epoch: 0.86628 seconds
+
+<img width="635" alt="cpu simple 500" src="https://github.com/user-attachments/assets/faa3fa65-4930-48ca-b2a9-8b506611eb76">
+
+
+GPU
+
+```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND gpu --HIDDEN 500 --RATE 0.05```
+
+Average time per epoch: 2.60810 seconds
+
+<img width="642" alt="simple gpu 500" src="https://github.com/user-attachments/assets/eadc9c1c-7040-4847-905f-ed014a365f08">
 
 
 ### Split
@@ -365,7 +387,9 @@ CPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 100 --DATASET split --RATE 0.05```
 
-<img width="630" alt="cpu split 100" src="https://github.com/user-attachments/assets/e224bc9d-1af8-4363-96cc-45c0292a865e">
+Average time per epoch: 0.14599 seconds
+
+<img width="640" alt="cpu split 100" src="https://github.com/user-attachments/assets/4f3d890c-c7eb-4225-bbfe-131858085b10">
 
 GPU
 
