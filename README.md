@@ -395,19 +395,25 @@ GPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND gpu --HIDDEN 100 --DATASET split --RATE 0.05```
 
-<img width="628" alt="gpu split 100" src="https://github.com/user-attachments/assets/5c77b3fb-a2f6-488a-8896-cd7d476db4b8">
+Average time per epoch: 1.98883 seconds
+
+<img width="623" alt="gpu split 100" src="https://github.com/user-attachments/assets/a09db2ac-6667-483e-8a1a-478dc31cd486">
 
 ### XOR
 CPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 100 --DATASET xor --RATE 0.05```
 
-<img width="630" alt="cpu xor 100" src="https://github.com/user-attachments/assets/b3ddb9a9-c700-441b-8609-2fc2af779fa1">
+Average time per epoch: 0.14254 seconds
+
+<img width="631" alt="cpu xor 100" src="https://github.com/user-attachments/assets/f3c9eedd-56e3-43f2-bde5-b563e861c2f3">
 
 GPU
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND gpu --HIDDEN 100 --DATASET xor --RATE 0.05```
 
-<img width="621" alt="gpu xor 100" src="https://github.com/user-attachments/assets/5f2aabec-4d3a-43f4-beaf-63f57e53b3e5">
+Average time per epoch: 1.96577 seconds
+
+<img width="622" alt="gpu xor 100" src="https://github.com/user-attachments/assets/f47c8bac-9939-42d2-86a4-b9b1cde00662">
 
 
 
