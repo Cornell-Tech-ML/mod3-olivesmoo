@@ -20,6 +20,7 @@ def run_matmul(backend, size=16) -> None:
 if __name__ == "__main__":
     # Warmup
     run_matmul(FastTensorBackend)
+    run_matmul(GPUBackend)
 
     ntrials = 3
     times = {}
@@ -35,6 +36,7 @@ if __name__ == "__main__":
             end_fast = time.time()
 
             start_gpu = time.time()
+            run_matmul(GPUBackend, size)
             end_gpu = time.time()
 
             fast_time = end_fast - start_fast
