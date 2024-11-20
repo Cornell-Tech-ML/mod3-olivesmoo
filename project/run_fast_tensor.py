@@ -35,7 +35,7 @@ class Network(minitorch.Module):
         h = self.layer1.forward(x).relu()
         h = self.layer2.forward(h).relu()
         return self.layer3.forward(h).sigmoid()
-        
+
 
 
 class Linear(minitorch.Module):
@@ -104,7 +104,7 @@ class FastTrain:
                 y2 = minitorch.tensor(data.y)
                 correct = int(((out.detach() > 0.5) == y2).sum()[0])
                 log_fn(epoch, total_loss, correct, losses, times[epoch])
-                
+
         avg_time = sum(times) / len(times)
         print(f"\nAverage time per epoch: {avg_time:.5f} seconds")
 

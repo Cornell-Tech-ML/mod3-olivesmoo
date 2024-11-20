@@ -1,4 +1,3 @@
-import random
 import time
 import numpy as np
 import pandas as pd  # For the table
@@ -61,7 +60,7 @@ if __name__ == "__main__":
             backend_data["Size"],
             backend_data["Time"],
             marker="o",
-            label=f"{backend} Backend"
+            label=f"{backend} Backend",
         )
 
     plt.title("Matrix Multiplication Timing")

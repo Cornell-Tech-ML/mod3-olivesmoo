@@ -180,6 +180,7 @@ def tensor_map(
             o = index_to_position(out_index, out_strides)
             j = index_to_position(in_index, in_strides)
             out[o] = fn(in_storage[j])
+
     return cuda.jit()(_map)  # type: ignore
 
 
@@ -219,7 +220,7 @@ def tensor_zip(
         a_index = cuda.local.array(MAX_DIMS, numba.int32)
         b_index = cuda.local.array(MAX_DIMS, numba.int32)
         i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
-        
+
         # TODO: Implement for Task 3.3.
         if i < out_size:
             to_index(i, out_shape, out_index)
@@ -277,6 +278,7 @@ def _sum_practice(out: Storage, a: Storage, size: int) -> None:
     if pos == 0:
         out[cuda.blockIdx.x] = cache[0]
 
+
 jit_sum_practice = cuda.jit()(_sum_practice)
 
 
@@ -328,8 +330,10 @@ def tensor_reduce(
         # assign a block to each index reduced over
         reduce_size = a_shape[reduce_dim]
         if pos < reduce_size:
-            to_index(out_pos, out_shape, out_index) #index of output
-            j = index_to_position(out_index, a_strides) # first position of the dim we want to accumulate
+            to_index(out_pos, out_shape, out_index)  # index of output
+            j = index_to_position(
+                out_index, a_strides
+            )  # first position of the dim we want to accumulate
             offset = a_strides[reduce_dim] * pos
             cache[pos] = a_storage[j + offset]
         else:
@@ -390,8 +394,8 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
     local_j = cuda.threadIdx.y
 
     if i < size and j < size:
-        a_shared[local_i, local_j] = a[i * size + j] #a[i, j]
-        b_shared[local_i, local_j] = b[i * size + j] #b[i, j]
+        a_shared[local_i, local_j] = a[i * size + j]  # a[i, j]
+        b_shared[local_i, local_j] = b[i * size + j]  # b[i, j]
 
         cuda.syncthreads()
 
@@ -400,12 +404,12 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
             acc += a_shared[local_i, k] * b_shared[k, local_j]
         out[i * size + j] = acc
 
-
     # i = cuda.blockIdx.x * BLOCK_DIM + cuda.threadIdx.x
     # j = cuda.blockIdx.y * BLOCK_DIM + cuda.threadIdx.y
     # if i < size and j < size:
     #     for k in range(size):
     #         out[i * size + j] += a[i * size + k] * b[k * size + j]
+
 
 jit_mm_practice = jit(_mm_practice)
 
@@ -475,19 +479,23 @@ def _tensor_matrix_multiply(
     # TODO: Implement for Task 3.4.
 
     acc = 0
-    size = a_shape[-1] # should equal b_shape[-2]
+    size = a_shape[-1]  # should equal b_shape[-2]
     for k in range(0, size, BLOCK_DIM):
         if batch < out_shape[0] and i < a_shape[-2] and k + pj < size:
-            a_index = batch * a_batch_stride + i * a_strides[1] + (k+pj) * a_strides[2]
+            a_index = (
+                batch * a_batch_stride + i * a_strides[1] + (k + pj) * a_strides[2]
+            )
             a_shared[pi, pj] = a_storage[a_index]
             # a_shared[pi, pj] = a[i, k + pj]
         if batch < out_shape[0] and j < b_shape[-1] and k + pi < size:
-            b_index = batch * b_batch_stride + (k+pi) * b_strides[1] + j * b_strides[2]
+            b_index = (
+                batch * b_batch_stride + (k + pi) * b_strides[1] + j * b_strides[2]
+            )
             b_shared[pi, pj] = b_storage[b_index]
             # b_shared[pi, pj] = b[k + pi, j]
 
         cuda.syncthreads()
-        
+
         for local_k in range(min(BLOCK_DIM, size - k)):
             acc += a_shared[pi, local_k] * b_shared[local_k, pj]
 
@@ -495,8 +503,7 @@ def _tensor_matrix_multiply(
         out_index = batch * out_strides[0] + i * out_strides[-2] + j * out_strides[-1]
         out[out_index] = acc
 
-
-    #def mm_shared1(out, a, b, K):
+    # def mm_shared1(out, a, b, K):
     # ...
     # for s in range(0, K, TPB):
     #     sharedA[local_i, local_j] = a[i, s + local_j]
