@@ -70,4 +70,6 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
+
+    plt.savefig("timing_plot.png")
     plt.show()
