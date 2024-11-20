@@ -104,6 +104,9 @@ class FastTrain:
                 y2 = minitorch.tensor(data.y)
                 correct = int(((out.detach() > 0.5) == y2).sum()[0])
                 log_fn(epoch, total_loss, correct, losses, times[epoch])
+                
+        avg_time = sum(times) / len(times)
+        print(f"\nAverage time per epoch: {avg_time:.5f} seconds")
 
 
 if __name__ == "__main__":
