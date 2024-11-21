@@ -29,6 +29,18 @@ Fn = TypeVar("Fn")
 
 
 def njit(fn: Fn, **kwargs: Any) -> Fn:
+    """JIT-compiles a function for optimized performance with optional arguments.
+
+    Args:
+    ----
+        fn (Fn): The function to be JIT-compiled.
+        **kwargs (Any): Optional keyword arguments to be passed to the JIT compiler.
+
+    Returns:
+    -------
+        Fn: A JIT-compiled version of the input function `fn`.
+
+    """
     return _njit(inline="always", **kwargs)(fn)  # type: ignore
 
 

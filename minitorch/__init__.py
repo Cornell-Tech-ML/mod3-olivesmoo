@@ -1,3 +1,10 @@
+"""minitorch: A lightweight framework for building and experimenting with neural networks.
+
+This package provides core functionalities for tensor operations, automatic differentiation,
+modules, optimizers, datasets, and testing utilities. It also includes fast and CUDA-based
+implementations for performance optimization.
+"""
+
 from .testing import MathTest, MathTestVariable  # type: ignore # noqa: F401,F403
 from .fast_ops import *  # noqa: F401,F403
 from .cuda_ops import *  # noqa: F401,F403

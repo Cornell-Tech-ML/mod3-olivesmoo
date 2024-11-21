@@ -1,18 +1,33 @@
 import time
 import numpy as np
-import pandas as pd  # For the table
-import matplotlib.pyplot as plt  # For plotting
+import pandas as pd
+import matplotlib.pyplot as plt
 import minitorch
 
 FastTensorBackend = minitorch.TensorBackend(minitorch.FastOps)
 GPUBackend = minitorch.TensorBackend(minitorch.CudaOps)
 
 
-def run_matmul(backend, size=16) -> None:
+def run_matmul(backend: minitorch.TensorBackend, size: int = 16) -> None:
+    """Performs matrix multiplication using the specified backend and matrix size.
+
+    Args:
+    ----
+        backend (minitorch.TensorBackend): The backend to use for matrix multiplication.
+                                           This can be a CPU backend (e.g., FastTensorBackend)
+                                           or a GPU backend (e.g., GPUBackend).
+        size (int, optional): The size of the square matrices to multiply. Defaults to 16.
+
+    Returns:
+    -------
+        None: This function does not return any value; it performs the matrix multiplication
+              as a side effect.
+
+    """
     batch_size = 2
     x = minitorch.rand((batch_size, size, size), backend=backend)
     y = minitorch.rand((batch_size, size, size), backend=backend)
-    z = x @ y
+    x @ y
 
 
 if __name__ == "__main__":
