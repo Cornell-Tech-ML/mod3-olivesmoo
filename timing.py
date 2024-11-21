@@ -1,7 +1,7 @@
 import time
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+# import pandas as pd
+# import matplotlib.pyplot as plt
 import minitorch
 
 FastTensorBackend = minitorch.TensorBackend(minitorch.FastOps)
@@ -62,28 +62,28 @@ if __name__ == "__main__":
         times.append({"Size": size, "Backend": "Fast", "Time": avg_fast_time})
         times.append({"Size": size, "Backend": "GPU", "Time": avg_gpu_time})
 
-    # Convert results to a pandas DataFrame
-    df = pd.DataFrame(times)
-    print("\nTiming Summary Table:")
-    print(df)
+    # # Convert results to a pandas DataFrame
+    # df = pd.DataFrame(times)
+    # print("\nTiming Summary Table:")
+    # print(df)
 
-    # Plot results using only matplotlib
-    plt.figure(figsize=(10, 6))
-    for backend in df["Backend"].unique():
-        backend_data = df[df["Backend"] == backend]
-        plt.plot(
-            backend_data["Size"],
-            backend_data["Time"],
-            marker="o",
-            label=f"{backend} Backend",
-        )
+    # # Plot results using only matplotlib
+    # plt.figure(figsize=(10, 6))
+    # for backend in df["Backend"].unique():
+    #     backend_data = df[df["Backend"] == backend]
+    #     plt.plot(
+    #         backend_data["Size"],
+    #         backend_data["Time"],
+    #         marker="o",
+    #         label=f"{backend} Backend",
+    #     )
 
-    plt.title("Matrix Multiplication Timing")
-    plt.xlabel("Matrix Size")
-    plt.ylabel("Average Time (seconds)")
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
+    # plt.title("Matrix Multiplication Timing")
+    # plt.xlabel("Matrix Size")
+    # plt.ylabel("Average Time (seconds)")
+    # plt.grid(True)
+    # plt.legend()
+    # plt.tight_layout()
 
-    plt.savefig("timing_plot.png")
-    plt.show()
+    # plt.savefig("timing_plot.png")
+    # plt.show()
