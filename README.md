@@ -347,7 +347,7 @@ None
 
 ## Module 3.5
 ### Simple
-CPU
+#### CPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 100 --RATE 0.05```
 
@@ -355,7 +355,7 @@ Average time per epoch: 0.14616 seconds
 
 <img width="663" alt="cpu simple 100" src="https://github.com/user-attachments/assets/859f0e2e-ab00-4632-a4c2-c3d47d14c43e">
 
-GPU
+#### GPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND gpu --HIDDEN 100 --RATE 0.05```
 
@@ -364,7 +364,7 @@ Average time per epoch: 2.00573 seconds
 <img width="627" alt="gpu simple 100" src="https://github.com/user-attachments/assets/ff5f4012-4dc6-4b60-abca-0fde7fdb063e">
 
 ### Simple - 500 hidden
-CPU
+#### CPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 500 --RATE 0.05```
 
@@ -373,7 +373,7 @@ Average time per epoch: 0.86628 seconds
 <img width="635" alt="cpu simple 500" src="https://github.com/user-attachments/assets/faa3fa65-4930-48ca-b2a9-8b506611eb76">
 
 
-GPU
+#### GPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND gpu --HIDDEN 500 --RATE 0.05```
 
@@ -383,7 +383,7 @@ Average time per epoch: 2.60810 seconds
 
 
 ### Split
-CPU
+#### CPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 100 --DATASET split --RATE 0.05```
 
@@ -391,7 +391,7 @@ Average time per epoch: 0.14599 seconds
 
 <img width="640" alt="cpu split 100" src="https://github.com/user-attachments/assets/4f3d890c-c7eb-4225-bbfe-131858085b10">
 
-GPU
+#### GPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND gpu --HIDDEN 100 --DATASET split --RATE 0.05```
 
@@ -400,7 +400,7 @@ Average time per epoch: 1.98883 seconds
 <img width="623" alt="gpu split 100" src="https://github.com/user-attachments/assets/a09db2ac-6667-483e-8a1a-478dc31cd486">
 
 ### XOR
-CPU
+#### CPU
 
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND cpu --HIDDEN 100 --DATASET xor --RATE 0.05```
 
@@ -408,7 +408,8 @@ Average time per epoch: 0.14254 seconds
 
 <img width="631" alt="cpu xor 100" src="https://github.com/user-attachments/assets/f3c9eedd-56e3-43f2-bde5-b563e861c2f3">
 
-GPU
+#### GPU
+
 ```!cd $DIR; PYTHONPATH=/content/$DIR python3 project/run_fast_tensor.py --BACKEND gpu --HIDDEN 100 --DATASET xor --RATE 0.05```
 
 Average time per epoch: 1.96577 seconds
