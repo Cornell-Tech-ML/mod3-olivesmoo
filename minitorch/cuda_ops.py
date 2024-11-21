@@ -484,15 +484,21 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
     local_j = cuda.threadIdx.y
 
     if i < size and j < size:
-        a_shared[local_i, local_j] = a[i * size + j]  # a[i, j]
-        b_shared[local_i, local_j] = b[i * size + j]  # b[i, j]
+        a_shared[local_i, local_j] = a[
+            i * size + j
+        ]  # stores a[i, j] into shared_a[i, j]
+        b_shared[local_i, local_j] = b[
+            i * size + j
+        ]  # stores b[i, j] into shared_b[i, j]
 
-        cuda.syncthreads()
+        cuda.syncthreads()  # wait for everything to be loaded into shared
 
-        acc = 0.0
-        for k in range(size):
-            acc += a_shared[local_i, k] * b_shared[k, local_j]
-        out[i * size + j] = acc
+        acc = 0.0  # accumulate partial sum of one out position
+        for k in range(size):  # loops thru row of a / column of b
+            acc += (
+                a_shared[local_i, k] * b_shared[k, local_j]
+            )  # multiply cell from a and b
+        out[i * size + j] = acc  # write to out[i, j]
 
 
 jit_mm_practice = jit(_mm_practice)
@@ -581,41 +587,47 @@ def _tensor_matrix_multiply(
     #    c) Compute the dot produce for position c[i, j]
     # TODO: Implement for Task 3.4.
 
-    acc = 0
-    size = a_shape[-1]  # should equal b_shape[-2]
-    for k in range(0, size, BLOCK_DIM):
-        if batch < out_shape[0] and i < a_shape[-2] and k + pj < size:
+    acc = 0  # accumulate partial sum for each out position
+    size = a_shape[-1]  # inner dimension, should equal b_shape[-2]
+    for k in range(
+        0, size, BLOCK_DIM
+    ):  # loop thru the blocks for one index of out matrix since can be greater than size of shared (k is the index of the first thread in a block)
+        if batch < out_shape[0] and i < a_shape[-2] and k + pj < size:  #
+            # global memory idx for current thread in a
+            # batch * a_batch_stride is the offset (0 if batch size is 1)
+            # i * a_strides[1] is the row offset
+            # (k + pj) * a_strides[2] is the column offset
             a_index = (
                 batch * a_batch_stride + i * a_strides[1] + (k + pj) * a_strides[2]
             )
+            # save value from a into shared memory; doing a_shared[pi, pj] = a[i, k + pj]
             a_shared[pi, pj] = a_storage[a_index]
-            # a_shared[pi, pj] = a[i, k + pj]
+
         if batch < out_shape[0] and j < b_shape[-1] and k + pi < size:
+            # global memory index for current thread in b
+            # batch * b_batch_stride is the offset (0 if batch size is 1)
+            # (k + pi) * b_strides[1] is the row offset
+            # j * b_strides[2] is the column offset
             b_index = (
                 batch * b_batch_stride + (k + pi) * b_strides[1] + j * b_strides[2]
             )
+            # save value from b into shared memory; doing b_shared[pi, pj] = b[k + pi, j]
             b_shared[pi, pj] = b_storage[b_index]
-            # b_shared[pi, pj] = b[k + pi, j]
 
-        cuda.syncthreads()
-
+        cuda.syncthreads()  # wait for entire shared memory to be completed
+        # loop thru shared memory, accounting for if shared mem is not full
         for local_k in range(min(BLOCK_DIM, size - k)):
-            acc += a_shared[pi, local_k] * b_shared[local_k, pj]
+            acc += (
+                a_shared[pi, local_k] * b_shared[local_k, pj]
+            )  # dot product of row in a and col in b
 
-    if batch < out_shape[0] and i < out_shape[-2] and j < out_shape[-1]:
-        out_index = batch * out_strides[0] + i * out_strides[-2] + j * out_strides[-1]
-        out[out_index] = acc
-
-    # def mm_shared1(out, a, b, K):
-    # ...
-    # for s in range(0, K, TPB):
-    #     sharedA[local_i, local_j] = a[i, s + local_j]
-    #     sharedB[local_i, local_j] = b[s + local_i, j]
-    #     ...
-    #     for k in range(TPB):
-    #         t += sharedA[local_i, k] * sharedB[k, local_j]
-    # out[i, j] = t
-    # raise NotImplementedError("Need to implement for Task 3.4")
+    if (
+        batch < out_shape[0] and i < out_shape[-2] and j < out_shape[-1]
+    ):  # within bounds of out
+        out_index = (
+            batch * out_strides[0] + i * out_strides[-2] + j * out_strides[-1]
+        )  # global index of [batch, i, j]
+        out[out_index] = acc  # store dot product in that value
 
 
 tensor_matrix_multiply = jit(_tensor_matrix_multiply)
